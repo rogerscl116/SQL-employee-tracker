@@ -15,7 +15,7 @@ VALUES
     ("Sales Manager", 80000, 2),
     ("HR Director", 100000, 3),
     ("HR Coordinator", 45000, 3),
-    ("IT Manager", 80000, 4),
+    ("IT Manager", 90000, 4),
     ("IT Project Coordinator", 52000, 4);
 
 -- employee seeds

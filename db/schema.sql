@@ -20,5 +20,3 @@ CREATE TABLE employee (
     FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE,
     FOREIGN KEY (manager_id) REFERENCES role(id) ON DELETE CASCADE
 );
-
--- fix bug with foreign keys in employee table

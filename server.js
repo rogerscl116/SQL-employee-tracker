@@ -25,7 +25,7 @@ const userQuestions = () => {
         addDept();
         break;
       case 'Add A Role':
-        //addRole();
+        addRole();
         break;
       case 'Add An Employee':
         //addEmployee();
@@ -37,16 +37,16 @@ const userQuestions = () => {
   })
 }
 
-viewDepts = () => {
+const viewDepts = () => {
   db.query(`SELECT * FROM department`, (err, res) => {
       if (err) throw err;
       console.log('\n');
-      console.table(res);
+      console.table('Departments', res);
       return userQuestions();
   })
 };
 
-viewRoles = () => {
+const viewRoles = () => {
   const query = `SELECT role.title, role.id, department.name AS department, role.salary
   FROM employee
   LEFT JOIN role ON (role.id = employee.role_id)
@@ -55,12 +55,12 @@ viewRoles = () => {
   db.query(query, (err, res) => {
       if (err) throw err;
       console.log('\n');
-      console.table(res);
+      console.table('Roles', res);
       return userQuestions();
   });
 }
 
-viewEmployees = () => {
+const viewEmployees = () => {
   const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
   FROM employee
   LEFT JOIN employee manager on manager.id = employee.manager_id
@@ -70,13 +70,94 @@ viewEmployees = () => {
   db.query(query, (err, res) => {
       if (err) throw err;
       console.log('\n');
-      console.table(res);
+      console.table('Employees', res);
       return userQuestions();
   });
 }
 
-// addDept = () => {
+const addDept = () => {
+  query = `SELECT name AS "Departments" FROM department`;
+  db.query(query, (err, res) => {
+      if (err) throw err;
 
-// }
+      console.log('');
+      console.table(res);
+
+      prompt([
+          {
+              name: 'newDept',
+              type: 'input',
+              message: 'Enter the name of your new department:',
+              validate: newDept => {
+                if (newDept) {
+                  return true;
+                } else {
+                  console.log('Please enter a department name!');
+                  return false;
+                }
+              }
+          }
+      ]).then((answer) => {
+          db.query(`INSERT INTO department(name) VALUES(?)`, answer.newDept)
+          viewDepts();
+          return userQuestions();
+      })
+  })
+}
+
+const addRole = () => {
+  const query = `SELECT * FROM role`
+  db.query(query, (err, res) => {
+      if (err) throw err;
+
+      console.log('');
+      console.table('Roles', res);
+
+      prompt([
+          {
+              name: 'newName',
+              type: 'input',
+              message: 'Enter the new role name:',
+              validate: newName => {
+                if (newName) {
+                  return true;
+                } else {
+                  console.log('Please enter a role name!');
+                  return false;
+                }
+              }
+          },
+          {
+              name: 'newSalary',
+              type: 'input',
+              message: 'Enter the salary for the new role:',
+              validate: newSalary => {
+                if (newSalary) {
+                  return true;
+                } else {
+                  console.log('Please enter a salary for the new role!');
+                  return false;
+                }
+              }
+          },
+          {
+              name: 'dept',
+              type: 'list',
+              message: 'Select the department for the new role:',
+              // choices:
+          }
+      ]).then((answer) => {
+          db.query(
+              `INSERT INTO roles(title, salary, department_id) 
+              VALUES
+              ("${answer.newName}", "${answer.newSalary}", 
+              (SELECT id FROM department WHERE department_name = "${answer.dept}"));`
+          )
+          userQuestions();
+
+      })
+  })
+
+}
 
 userQuestions();

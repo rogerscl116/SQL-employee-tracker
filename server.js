@@ -121,7 +121,7 @@ const addDept = () => {
 }
 
 const addRole = () => {
-  const query = `SELECT * FROM role`
+  const query = `SELECT * FROM department`;
   db.query(query, (err, res) => {
       if (err) throw err;
 
@@ -159,19 +159,91 @@ const addRole = () => {
               name: 'dept',
               type: 'list',
               message: 'Select the department for the new role:',
-              // choices:
+              choices: () => {
+                let deptArry = [];
+                for (let i = 0; i < res.length; i++) {
+                deptArry.push(res[i].name);
+                }
+                return deptArry;
+            },
           }
       ]).then((answer) => {
-          db.query(
-              `INSERT INTO roles(title, salary, department_id) 
-              VALUES
-              ("${answer.newName}", "${answer.newSalary}", 
-              (SELECT id FROM department WHERE department_name = "${answer.dept}"));`
-          )
+        let department_id;
+        for (let a = 0; a < res.length; a++) {
+            if (res[a].name == answer.dept) {
+                department_id = res[a].id;
+            }
+        }
+        db.query(`INSERT INTO role SET ?`,
+        {
+          title: answer.newName,
+          salary: answer.newSalary,
+          department_id: department_id
+        },
+        (err, res) => {
+          if(err)throw err;
+          console.log('Your role has been added!');
+          console.log(viewRoles());
           userQuestions();
-
+        })
       })
   })
 }
+
+const addEmployee = () => {
+  db.query('SELECT * FROM role', (err, res) => {
+      if (err) throw err;
+        prompt([
+              {
+                  name: 'firstName',
+                  type: 'input', 
+                  message: "Enter the employee's first name:",
+              },
+              {
+                  name: 'lastName',
+                  type: 'input', 
+                  message: "Enter the employee's last name:"
+              },
+              {
+                  name: 'managerID',
+                  type: 'input', 
+                  message: "Enter the employee's manager ID:"
+              },
+              {
+                  name: 'role', 
+                  type: 'list',
+                  choices: () => {
+                  let roleArray = [];
+                  for (let i = 0; i < res.length; i++) {
+                      roleArray.push(res[i].title);
+                  }
+                  return roleArray;
+                  },
+                  message: "Enter the employee's role:"
+              }
+              ]).then((answer) => {
+                  let role_id;
+                  for (let a = 0; a < res.length; a++) {
+                      if (res[a].title == answer.role) {
+                          role_id = res[a].id;
+                      }                  
+                  }  
+                  db.query(
+                  'INSERT INTO employee SET ?',
+                  {
+                      first_name: answer.firstName,
+                      last_name: answer.lastName,
+                      manager_id: answer.managerID,
+                      role_id: role_id,
+                  },
+                  (err) => {
+                      if (err) throw err;
+                      console.log('Your employee has been added!');
+                      console.log(viewEmployees());
+                      userQuestions();
+                  })
+              })
+      })
+};
 
 init();

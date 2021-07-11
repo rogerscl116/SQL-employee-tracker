@@ -1,6 +1,21 @@
 const { prompt } = require('inquirer');
 const cTable = require('console.table');
+const figlet = require('figlet');
 const db = require('./db/connection');
+
+function init() {
+  // screen at beginning
+  figlet('Employee Tracker', function (err, data) {
+    if (err) {
+      console.log('Something went wrong...');
+      console.dir(err);
+      return;
+    }
+    console.log(data);
+    console.log('\n');
+    userQuestions()
+  })
+};
 
 // user questions function
 const userQuestions = () => {
@@ -28,10 +43,10 @@ const userQuestions = () => {
         addRole();
         break;
       case 'Add An Employee':
-        //addEmployee();
+        addEmployee();
         break;
       case 'Update An Employee Role':
-        //updateRole();
+        updateRole();
         break;
     }
   })
@@ -42,7 +57,7 @@ const viewDepts = () => {
       if (err) throw err;
       console.log('\n');
       console.table('Departments', res);
-      return userQuestions();
+      userQuestions();
   })
 };
 
@@ -56,27 +71,27 @@ const viewRoles = () => {
       if (err) throw err;
       console.log('\n');
       console.table('Roles', res);
-      return userQuestions();
+      userQuestions();
   });
 }
 
 const viewEmployees = () => {
-  const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
+  const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
   FROM employee
+  LEFT JOIN role ON employee.role_id = role.id
   LEFT JOIN employee manager on manager.id = employee.manager_id
-  INNER JOIN role ON (role.id = employee.role_id)
-  INNER JOIN department ON (department.id = role.department_id)
+  LEFT JOIN department ON role.department_id = department.id
   ORDER BY employee.id;`;
   db.query(query, (err, res) => {
       if (err) throw err;
       console.log('\n');
       console.table('Employees', res);
-      return userQuestions();
+      userQuestions();
   });
 }
 
 const addDept = () => {
-  query = `SELECT name AS "Departments" FROM department`;
+  const query = `SELECT name AS "Departments" FROM department`;
   db.query(query, (err, res) => {
       if (err) throw err;
 
@@ -100,7 +115,7 @@ const addDept = () => {
       ]).then((answer) => {
           db.query(`INSERT INTO department(name) VALUES(?)`, answer.newDept)
           viewDepts();
-          return userQuestions();
+          userQuestions();
       })
   })
 }
@@ -157,7 +172,6 @@ const addRole = () => {
 
       })
   })
-
 }
 
-userQuestions();
+init();

@@ -7,11 +7,13 @@
 A command-line application to manage a company's employee database, using Node.js, Inquirer, and MySQL.
 
   ### Screenshots
-  ![SQL Employee Tracker Screenshot 1]()
+  ![SQL Employee Tracker Screenshot](./assets/images/sql-employee-tracker.jpg)
 
   ### Walkthrough Video
 
-  ![SQL Employee Tracker Walkthrough Video]()
+  ![SQL Employee Tracker Walkthrough](./assets/videos/sql-employee-tracker.gif)
+
+  [Click here to watch walkthrough](https://drive.google.com/file/d/1_2tdnLypuK6cWjr-_oKwKg2eVie1tX9j/view)
 
   ## Table of Contents
   * [Installation](#installation)

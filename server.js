@@ -114,6 +114,7 @@ const addDept = () => {
           }
       ]).then((answer) => {
           db.query(`INSERT INTO department(name) VALUES(?)`, answer.newDept)
+          console.log('Your department has been added!');
           viewDepts();
           userQuestions();
       })
@@ -247,3 +248,4 @@ const addEmployee = () => {
 };
 
 init();
+

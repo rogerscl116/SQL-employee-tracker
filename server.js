@@ -1,6 +1,21 @@
 const { prompt } = require('inquirer');
 const cTable = require('console.table');
+const figlet = require('figlet');
 const db = require('./db/connection');
+
+function init() {
+  // screen at beginning
+  figlet('Employee Tracker', function (err, data) {
+    if (err) {
+      console.log('Something went wrong...');
+      console.dir(err);
+      return;
+    }
+    console.log(data);
+    console.log('\n');
+    userQuestions()
+  })
+};
 
 // user questions function
 const userQuestions = () => {
@@ -28,10 +43,10 @@ const userQuestions = () => {
         addRole();
         break;
       case 'Add An Employee':
-        //addEmployee();
+        addEmployee();
         break;
       case 'Update An Employee Role':
-        //updateRole();
+        updateRole();
         break;
     }
   })
@@ -42,7 +57,7 @@ const viewDepts = () => {
       if (err) throw err;
       console.log('\n');
       console.table('Departments', res);
-      return userQuestions();
+      userQuestions();
   })
 };
 
@@ -56,27 +71,27 @@ const viewRoles = () => {
       if (err) throw err;
       console.log('\n');
       console.table('Roles', res);
-      return userQuestions();
+      userQuestions();
   });
 }
 
 const viewEmployees = () => {
-  const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
+  const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
   FROM employee
+  LEFT JOIN role ON employee.role_id = role.id
   LEFT JOIN employee manager on manager.id = employee.manager_id
-  INNER JOIN role ON (role.id = employee.role_id)
-  INNER JOIN department ON (department.id = role.department_id)
+  LEFT JOIN department ON role.department_id = department.id
   ORDER BY employee.id;`;
   db.query(query, (err, res) => {
       if (err) throw err;
       console.log('\n');
       console.table('Employees', res);
-      return userQuestions();
+      userQuestions();
   });
 }
 
 const addDept = () => {
-  query = `SELECT name AS "Departments" FROM department`;
+  const query = `SELECT name AS "Departments" FROM department`;
   db.query(query, (err, res) => {
       if (err) throw err;
 
@@ -100,13 +115,13 @@ const addDept = () => {
       ]).then((answer) => {
           db.query(`INSERT INTO department(name) VALUES(?)`, answer.newDept)
           viewDepts();
-          return userQuestions();
+          userQuestions();
       })
   })
 }
 
 const addRole = () => {
-  const query = `SELECT * FROM role`
+  const query = `SELECT * FROM department`;
   db.query(query, (err, res) => {
       if (err) throw err;
 
@@ -144,20 +159,91 @@ const addRole = () => {
               name: 'dept',
               type: 'list',
               message: 'Select the department for the new role:',
-              // choices:
+              choices: () => {
+                let deptArry = [];
+                for (let i = 0; i < res.length; i++) {
+                deptArry.push(res[i].name);
+                }
+                return deptArry;
+            },
           }
       ]).then((answer) => {
-          db.query(
-              `INSERT INTO roles(title, salary, department_id) 
-              VALUES
-              ("${answer.newName}", "${answer.newSalary}", 
-              (SELECT id FROM department WHERE department_name = "${answer.dept}"));`
-          )
+        let department_id;
+        for (let a = 0; a < res.length; a++) {
+            if (res[a].name == answer.dept) {
+                department_id = res[a].id;
+            }
+        }
+        db.query(`INSERT INTO role SET ?`,
+        {
+          title: answer.newName,
+          salary: answer.newSalary,
+          department_id: department_id
+        },
+        (err, res) => {
+          if(err)throw err;
+          console.log('Your role has been added!');
+          console.log(viewRoles());
           userQuestions();
-
+        })
       })
   })
-
 }
 
-userQuestions();
+const addEmployee = () => {
+  db.query('SELECT * FROM role', (err, res) => {
+      if (err) throw err;
+        prompt([
+              {
+                  name: 'firstName',
+                  type: 'input', 
+                  message: "Enter the employee's first name:",
+              },
+              {
+                  name: 'lastName',
+                  type: 'input', 
+                  message: "Enter the employee's last name:"
+              },
+              {
+                  name: 'managerID',
+                  type: 'input', 
+                  message: "Enter the employee's manager ID:"
+              },
+              {
+                  name: 'role', 
+                  type: 'list',
+                  choices: () => {
+                  let roleArray = [];
+                  for (let i = 0; i < res.length; i++) {
+                      roleArray.push(res[i].title);
+                  }
+                  return roleArray;
+                  },
+                  message: "Enter the employee's role:"
+              }
+              ]).then((answer) => {
+                  let role_id;
+                  for (let a = 0; a < res.length; a++) {
+                      if (res[a].title == answer.role) {
+                          role_id = res[a].id;
+                      }                  
+                  }  
+                  db.query(
+                  'INSERT INTO employee SET ?',
+                  {
+                      first_name: answer.firstName,
+                      last_name: answer.lastName,
+                      manager_id: answer.managerID,
+                      role_id: role_id,
+                  },
+                  (err) => {
+                      if (err) throw err;
+                      console.log('Your employee has been added!');
+                      console.log(viewEmployees());
+                      userQuestions();
+                  })
+              })
+      })
+};
+
+init();

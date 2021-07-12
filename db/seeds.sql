@@ -3,7 +3,7 @@ INSERT INTO department (name)
 VALUES 
     ("Production"),
     ("Sales"),
-    ("Human Resouces"),
+    ("Human Resources"),
     ("IT");
 
 -- role seeds

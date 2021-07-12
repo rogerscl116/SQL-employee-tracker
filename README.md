@@ -13,7 +13,7 @@ A command-line application to manage a company's employee database, using Node.j
 
   ![SQL Employee Tracker Walkthrough](./assets/videos/SQL-employee-tracker.gif)
 
-  [Click here for link](https://drive.google.com/file/d/1_2tdnLypuK6cWjr-_oKwKg2eVie1tX9j/view)
+  [Click here for link](https://drive.google.com/file/d/1_Z4aeSLhUoKCTBB_GmWRXO2lZTeJOr72/view)
 
   ## Table of Contents
   * [Installation](#installation)
